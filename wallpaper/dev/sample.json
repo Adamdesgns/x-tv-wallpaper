@@ -1,0 +1,38 @@
+{
+ "status": "ok",
+ "detail": "",
+ "checked": "2026-11-06T01:00:00.000Z",
+ "updated": "2026-11-06T01:00:00.000Z",
+ "posts": [
+  {
+   "id": "1", "url": "https://x.com/sample/status/1", "name": "Sample Builder", "handle": "@sample_builder", "verified": true,
+   "time": "2026-11-06T00:52:00.000Z", "social": "",
+   "text": "Shipped the new build tonight 🚀\n\nThree things I learned:\n1. Ship small\n2. Test on the real device\n3. Sleep is a feature",
+   "avatar": "", "photo": "", "isVideo": false, "replies": "12", "reposts": "4", "likes": "88", "views": "1.2K"
+  },
+  {
+   "id": "2", "url": "https://x.com/sample/status/2", "name": "Desk Plant Weekly", "handle": "@deskplant", "verified": false,
+   "time": "2026-11-05T22:10:00.000Z", "social": "Sample Builder reposted",
+   "text": "Retro TVs on a modern desk are back. Photo from this morning's setup:",
+   "avatar": "", "photo": "../5hhxt0u4.jpg", "isVideo": false, "replies": "3", "reposts": "19", "likes": "240", "views": "9.8K"
+  },
+  {
+   "id": "3", "url": "https://x.com/sample/status/3", "name": "A Very Long Display Name That Should Get Cut Off Somewhere", "handle": "@longname_account_test", "verified": true,
+   "time": "2026-11-04T15:00:00.000Z", "social": "",
+   "text": "Here is a link that is much too long to fit on one line: https://example.com/a/really/long/path/that/keeps/going/and/going/forever?with=query&params=true and some words after it so the wrap has to work properly across several lines of text on the little TV screen.",
+   "avatar": "", "photo": "", "isVideo": false, "replies": "", "reposts": "1", "likes": "7", "views": "310"
+  },
+  {
+   "id": "4", "url": "https://x.com/sample/status/4", "name": "Clip Channel", "handle": "@clips", "verified": false,
+   "time": "2026-11-06T00:59:30.000Z", "social": "",
+   "text": "Watch this 🎥",
+   "avatar": "", "photo": "../5hhxt0u4.jpg", "isVideo": true, "replies": "40", "reposts": "102", "likes": "1.1K", "views": "52K"
+  },
+  {
+   "id": "5", "url": "https://x.com/sample/status/5", "name": "Quiet Poster", "handle": "@quiet", "verified": false,
+   "time": "2026-11-05T20:00:00.000Z", "social": "",
+   "text": "gm",
+   "avatar": "", "photo": "", "isVideo": false, "replies": "", "reposts": "", "likes": "2", "views": "45"
+  }
+ ]
+}

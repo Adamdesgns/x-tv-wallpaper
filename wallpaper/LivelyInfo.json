@@ -1,0 +1,17 @@
+{
+  "AppVersion": "2.2.1.0",
+  "Title": "X TV",
+  "Thumbnail": "5hhxt0u4.jpg",
+  "Preview": "2mlhvoxr.gif",
+  "Desc": "Music TV with Adam's X timeline scrolling on the screen. Reads feed/feed.json, no network. Based on Music TV by rocksdanister (MIT).",
+  "Author": "rocksdanister (Music TV) + X TV feed",
+  "License": "MIT",
+  "Contact": "https://github.com/rocksdanister/audio-visualizer-wallpaper",
+  "Type": 1,
+  "FileName": "index.html",
+  "Arguments": "--audio --system-nowplaying",
+  "IsAbsolutePath": false,
+  "Id": null,
+  "Tags": null,
+  "Version": 0
+}

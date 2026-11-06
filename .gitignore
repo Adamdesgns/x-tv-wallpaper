@@ -1,0 +1,7 @@
+feeder/node_modules/
+# The Edge profile holds the X login session: never commit it.
+feeder/profile/
+feeder/feeder.log
+feeder/.lock
+# Adam's timeline, re-made every 10 minutes.
+wallpaper/feed/

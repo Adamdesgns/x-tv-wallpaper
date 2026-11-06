@@ -1,0 +1,14 @@
+{
+  "name": "x-tv-feeder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reads Adam's X home timeline from a dedicated Edge profile and writes it next to the X TV wallpaper.",
+  "scripts": {
+    "login": "node feeder.mjs --login",
+    "feed": "node feeder.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "^1.48.0"
+  }
+}
