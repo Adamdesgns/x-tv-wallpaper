@@ -267,13 +267,12 @@ async function waitForLogin() {
   await sleep(4000); // let X finish its own redirect to /home
 }
 
+// Returns 'login' when X wants a login: the caller waits for that OUTSIDE the
+// watchdog, because a person typing a password can take as long as they like.
 async function readTimeline() {
   await ensurePage();
-  let state = await goHome();
-  if (state === 'login') {
-    await waitForLogin();
-    state = await goHome();
-  }
+  const state = await goHome();
+  if (state === 'login') return 'login';
   if (state !== 'ok') {
     await writeStatus('error', 'Timeline did not load');
     await log('read: timeline did not load (' + state + ', ' + page.url() + ')');
@@ -323,7 +322,7 @@ async function readWithWatchdog() {
     timer = setTimeout(() => reject(new Error('read took over 3 min')), READ_TIMEOUT_MS);
   });
   try {
-    await Promise.race([readTimeline(), watchdog]);
+    return await Promise.race([readTimeline(), watchdog]);
   } catch (e) {
     if (/over 3 min/.test(e.message) && page && !page.isClosed()) {
       page.__crashed = true; // ensurePage() swaps it for a fresh tab next time
@@ -355,7 +354,11 @@ async function main() {
 
   while (!closed) {
     try {
-      await readWithWatchdog();
+      if ((await readWithWatchdog()) === 'login') {
+        await ensurePage();
+        await waitForLogin(); // no time limit: waits for Adam
+        continue; // read straight away once logged in
+      }
     } catch (e) {
       if (closed) break;
       await log('error: ' + (e?.stack || e));
