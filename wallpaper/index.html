@@ -110,7 +110,10 @@
         orbitalControl.maxDistance = 50;
         orbitalControl.minAzimuthAngle = Math.PI * -0.5;
         orbitalControl.maxAzimuthAngle = Math.PI * 0.5;
-        orbitalControl.target.set(0, 0, -0.1);
+        // X TV: aim at the TV itself, close and nearly head-on, so it fills the screen
+        // and the feed is readable (was: target 0,0,-0.1 from straight ahead, far away).
+        orbitalControl.target.set(0.6, -1.1, -5.5);
+        camera.position.set(-2.2, 0.6, 7.2);
         orbitalControl.enabled = false;
         //orbitalControl.autoRotate = true;
         orbitalControl.update();
