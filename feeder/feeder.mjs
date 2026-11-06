@@ -9,13 +9,15 @@
 //   node feeder.mjs --once     one read, then exit (testing)
 //   node feeder.mjs --visible  leave the window where it is (debugging)
 //
-// First run: the window comes on screen at X's login page until Adam logs in.
+// First run: X refuses logins from a script-driven browser, so a PLAIN Edge window
+// (same profile, no script) opens on X's login page; log in, then close it.
 // Closing the Edge window stops the feed until the next logon (the TV says "paused").
 
 import { chromium } from 'playwright-core';
 import fs from 'node:fs/promises';
 import { existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:net';
+import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +28,7 @@ const OUT = resolve(HERE, '..', 'wallpaper', 'feed');
 const IMG = join(OUT, 'img');
 const FEED = join(OUT, 'feed.json');
 const LOG = join(HERE, 'feeder.log');
+const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const PIPE = '\\\\.\\pipe\\x-tv-feeder';
 
 // Never faster than every 5 minutes, whatever the setting says.
@@ -193,7 +196,7 @@ async function saveImage(context, url, kind) {
 }
 
 // ---------- the Edge window ----------
-let context, page, cdp, windowId, closed = false;
+let context, page, cdp, windowId, closed = false, closingOnPurpose = false;
 
 // Use the first tab, and replace it if it was closed or crashed.
 async function ensurePage() {
@@ -247,24 +250,6 @@ async function goHome() {
     await sleep(500);
   }
   return 'timeout';
-}
-
-async function waitForLogin() {
-  await log('login: waiting for Adam to log in in the Edge window');
-  await writeStatus('logged-out', 'Log in to X in the Edge window');
-  await setWindow('show');
-  await page.bringToFront().catch(() => {});
-  await page.goto('https://x.com/login').catch(() => {});
-  while (!closed && !(await loggedIn())) {
-    await sleep(1500);
-    if (!closed && page.isClosed()) { // he closed the tab but not the window
-      await ensurePage();
-      await page.goto('https://x.com/login').catch(() => {});
-    }
-  }
-  if (closed) throw new Error('window closed');
-  await log('login: done');
-  await sleep(4000); // let X finish its own redirect to /home
 }
 
 // Returns 'login' when X wants a login: the caller waits for that OUTSIDE the
@@ -333,8 +318,33 @@ async function readWithWatchdog() {
   }
 }
 
-async function main() {
-  if (!(await takeLock())) { await log('skip: already running'); process.exit(0); }
+// X refuses logins from a browser a script is driving, so the login happens in a
+// plain Edge window on the same profile: no script attached. Adam logs in, closes
+// it, and the reader reopens with his saved session (it only reads after that).
+async function humanLogin() {
+  await log('login: opening a plain Edge window for Adam (X refuses scripted logins)');
+  await writeStatus('logged-out', 'Log in, then close that Edge window');
+  closingOnPurpose = true;
+  await context.close().catch(() => {});
+  closingOnPurpose = false;
+  await sleep(2000); // let Edge let go of the profile
+  const edge = spawn(EDGE, [
+    `--user-data-dir=${PROFILE}`,
+    '--no-first-run',
+    '--no-default-browser-check',
+    '--window-size=760,1000',
+    'https://x.com/login',
+  ], { stdio: 'ignore' });
+  await new Promise((r) => { edge.once('exit', r); edge.once('error', r); });
+  await log('login: plain Edge window closed');
+  await sleep(2000);
+  await openContext();
+}
+
+async function openContext() {
+  closed = false;
+  page = null;
+  cdp = null;
   context = await chromium.launchPersistentContext(PROFILE, {
     channel: 'msedge',
     headless: false,
@@ -348,16 +358,27 @@ async function main() {
       '--disable-features=CalculateNativeWinOcclusion',
     ],
   });
-  context.on('close', () => { closed = true; });
+  context.on('close', () => { if (!closingOnPurpose) closed = true; });
   await ensurePage();
+}
+
+async function main() {
+  if (!(await takeLock())) { await log('skip: already running'); process.exit(0); }
+  await openContext();
   await log('start: Edge open, reading about every ' + INTERVAL_MS / 60_000 + ' min');
 
   while (!closed) {
     try {
       if ((await readWithWatchdog()) === 'login') {
-        await ensurePage();
-        await waitForLogin(); // no time limit: waits for Adam
-        continue; // read straight away once logged in
+        await humanLogin();
+        if (!(await loggedIn())) {
+          // He closed it without logging in: stop rather than pop the window up again.
+          await log('login: still not logged in, stopping');
+          await writeStatus('paused', 'Not logged in. Run Start X TV feed.cmd');
+          await context.close().catch(() => {});
+          process.exit(0);
+        }
+        continue; // read straight away
       }
     } catch (e) {
       if (closed) break;
